@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -euo pipefail
+
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+function do_auth_once() {
+  test ! "${authenticated}" = "false" && return
+  authenticate_request "${s}" "${u}" "${p}"
+  authenticated="true"
+}
+
+function tab_separated_formatted_info_for_stream_type() {
+  # format and print the json to stdout
+  stream_type="$1"
+  file="${cache_info_directory}/${stream_type}_categories.json"
+
+  # ok limits to id and name
+  #jq '.[] | {category_id: .category_id, category_name: .category_name}' "${file}"
+
+  # flattens but idk
+  #jq  'tostream | flatten | join("|")' $file
+
+  jq '.[] | [{category_id: .category_id, category_name: .category_name}]' "${file}" | jq --raw-output '.[] | [.category_name, (.category_id | tonumber)] | @csv' | sort
+
+}
+
+# 'live', 'series', 'vod'
+stream_type="$1"
+tab_separated_formatted_info_for_stream_type "${stream_type}"
+
