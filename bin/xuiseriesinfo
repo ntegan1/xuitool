@@ -42,21 +42,8 @@ elif test "$argc" = "4"; then
   test "$4" = "episode"
   season="$3"
   echo season ${season} episodes 1>&2
+  # TODO: title vs name (name has date?) more relevant for same named movies?
   # get episodes for season
-  # pretty print episodes TODO
-  #jq '.[] | [{category_id: .category_id, category_name: .category_name}]' "${file}" | jq --raw-output '.[] | [.category_name, (.category_id | tonumber)] | @csv '| sort
-
-  #jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
-  #  jq '. | .[] | [{title: .title, episode: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}] | .[]'
-  #jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
-  #  jq '. | .[] | [{title: .title, episode: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]'  | \
-  #  jq '[.[] | {id : .id}] '
-  #jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
-  #  jq '. | [.[] | {title: .title, episode: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]'
-  #jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
-  #  jq '. | [.[] | {title: .title, episode: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]' | \
-  #  jq --raw-output '.[] | [(.episode_num), .title, .id] | @csv'
-
   jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
     jq '. | [.[] | {title: .title, episode_num: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]' | \
     jq --raw-output '.[] | [(.episode_num), .title, .id] | @csv'
@@ -68,7 +55,6 @@ elif test "$argc" = "5"; then
   echo season ${season} episode ${episode} 1>&2
   # do something about episode ( print its info)
   jq '. | .episodes["'"${season}"'"] | .[] | select(.episode_num == "'"${episode}"'")' "${out_file}"
-  
 
 fi
 
@@ -91,12 +77,6 @@ fi
 ## episode object
 # id, episode_num, title, container_extension, infoobject["season"]
 
-
-# get season episode num info
-#jq '.episodes | ."1"[] | select(.episode_num == "19")' $file
-
-# get seasons
-# jq '.episodes[] | .[] | .info | .season | tonumber' $file | sort | uniq
 
 # ffmpeg add title tag
 # and subtitle maybe
