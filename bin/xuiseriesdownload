@@ -48,38 +48,3 @@ get_url="${s}/series/${u}/${p}/${filename}"
 echo "$title" > ${title_file}
 curl -L "${get_url}" -o "${video_file}"
 echo "${video_file}"
-exit
-
-#do_auth_once
-if test   "$argc" = "2"; then
-  # list seasons
-  test "$2" = "season"
-  echo seasons 1>&2
-  echo $(jq '.episodes[] | .[] | .info | .season | tonumber' ${out_file} | sort | uniq)
-  exit
-elif test "$argc" = "3"; then
-  season="$3"
-  echo season ${season} info 1>&2
-
-  ## select the right season and print its info
-  jq '. | ."seasons"[] | select(."season_number" == '"${season}"')' ${out_file}
-elif test "$argc" = "4"; then
-  test "$2" = "season"
-  test "$4" = "episode"
-  season="$3"
-  echo season ${season} episodes 1>&2
-  # TODO: title vs name (name has date?) more relevant for same named movies?
-  # get episodes for season
-  jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
-    jq '. | [.[] | {title: .title, episode_num: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]' | \
-    jq --raw-output '.[] | [(.episode_num), .title, .id] | @csv'
-elif test "$argc" = "5"; then
-  test "$2" = "season"
-  test "$4" = "episode"
-  season="$3"
-  episode="$5"
-  echo season ${season} episode ${episode} 1>&2
-  # do something about episode ( print its info)
-  jq '. | .episodes["'"${season}"'"] | .[] | select(.episode_num == "'"${episode}"'")' "${out_file}"
-
-fi
