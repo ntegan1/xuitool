@@ -5,6 +5,21 @@ function authenticate_request() {
   password="$3"
   player_api_request "${providerurl}" "${username}" "${password}" ""
 }
+function download_streams_for_stream_type() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  stream_type="$4"
+  extraparams="&action="
+  action=""
+  test "${stream_type}" = "live" && action="get_live_streams"
+  test "${stream_type}" = "vod" && action="get_vod_streams"
+  test "${stream_type}" = "series" && action="get_series"
+  test "${action}" = "" && echo invalid stream type $stream_type && return
+  extraparams="${extraparams}${action}"
+  player_api_request "${providerurl}" "${username}" "${password}" "${extraparams}"
+
+}
 function download_categories_for_stream_type() {
   providerurl="$1"
   username="$2"

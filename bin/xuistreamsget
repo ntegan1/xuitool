@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -euo pipefail
+
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+function do_auth_once() {
+  test ! "${authenticated}" = "false" && return
+  authenticate_request "${s}" "${u}" "${p}"
+  authenticated="true"
+}
+
+function download_all_streams_if_needed() {
+  for f in live series vod; do
+    out_file="${cache_info_directory}/${f}_streams.json"
+    test -f "${out_file}" && continue
+    do_auth_once
+    download_streams_for_stream_type "${s}" "${u}" "${p}" "${f}" > "${out_file}"
+  done
+}
+download_all_streams_if_needed
