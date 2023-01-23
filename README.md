@@ -9,6 +9,7 @@ Tested on archlinux and uses the following packages:
 * mpv
 * subdl
 * ffmpeg
+* jq
 
 ### Other resources
 * https://github.com/grimelinse/xtream-codes-decoded
