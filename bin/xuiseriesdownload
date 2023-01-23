@@ -1,0 +1,85 @@
+#!/bin/bash
+
+set -euo pipefail
+
+argc="$#"
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+media_directory="${whereami}/../var/media"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+function do_auth_once() {
+  test ! "${authenticated}" = "false" && return
+  authenticate_request "${s}" "${u}" "${p}"
+  authenticated="true"
+}
+
+test "${argc}" = "5"
+series_id="$1"
+test "$2" = "season"
+test "$4" = "episode"
+out_file="${cache_info_directory}/series_info/${series_id}.json"
+test -f "${out_file}"
+season="$3"
+episode="$5"
+# TODO: maybe pipe seriesinfo output to this
+# the info
+episode_info="$(jq '. | .episodes["'"${season}"'"] | .[] | select(.episode_num == "'"${episode}"'")' "${out_file}")"
+#echo "${season_info}"
+title="$(echo "${episode_info}" | jq -r '.title')"
+extension="$(echo "${episode_info}" | jq -r '.container_extension')"
+stream_id="$(echo "${episode_info}" | jq -r '.id')"
+
+filename="${stream_id}.${extension}"
+video_file="${media_directory}/${filename}"
+title_file="${media_directory}/${stream_id}.title"
+test -f "${video_file}" && echo already downloaded 1>&2 && \
+  echo "${video_file}" && \
+  exit 0
+true
+echo download season ${season} episode ${episode} 1>&2
+get_url="${s}/series/${u}/${p}/${filename}"
+echo "$title" > ${title_file}
+curl -L "${get_url}" -o "${video_file}"
+echo "${video_file}"
+exit
+
+#do_auth_once
+if test   "$argc" = "2"; then
+  # list seasons
+  test "$2" = "season"
+  echo seasons 1>&2
+  echo $(jq '.episodes[] | .[] | .info | .season | tonumber' ${out_file} | sort | uniq)
+  exit
+elif test "$argc" = "3"; then
+  season="$3"
+  echo season ${season} info 1>&2
+
+  ## select the right season and print its info
+  jq '. | ."seasons"[] | select(."season_number" == '"${season}"')' ${out_file}
+elif test "$argc" = "4"; then
+  test "$2" = "season"
+  test "$4" = "episode"
+  season="$3"
+  echo season ${season} episodes 1>&2
+  # TODO: title vs name (name has date?) more relevant for same named movies?
+  # get episodes for season
+  jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
+    jq '. | [.[] | {title: .title, episode_num: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]' | \
+    jq --raw-output '.[] | [(.episode_num), .title, .id] | @csv'
+elif test "$argc" = "5"; then
+  test "$2" = "season"
+  test "$4" = "episode"
+  season="$3"
+  episode="$5"
+  echo season ${season} episode ${episode} 1>&2
+  # do something about episode ( print its info)
+  jq '. | .episodes["'"${season}"'"] | .[] | select(.episode_num == "'"${episode}"'")' "${out_file}"
+
+fi
