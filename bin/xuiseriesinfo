@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+argc="$#"
 whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
 include_dir="${whereami}/../include"
 credentials_dir="${whereami}/../etc/credentials"
@@ -19,5 +20,66 @@ function do_auth_once() {
 }
 
 series_id="$1"
+out_file="${cache_info_directory}/series_info/${series_id}.json"
+#test -f "${out_file}" && exit 0
 #do_auth_once
-download_series_info_for_stream_id "${s}" "${u}" "${p}" "${series_id}"
+test ! -f "${out_file}" && download_series_info_for_stream_id "${s}" "${u}" "${p}" "${series_id}" > "${out_file}"
+true
+if test   "$argc" = "2"; then
+  # list seasons
+  test "$2" = "season"
+  echo seasons 1>&2
+  echo $(jq '.episodes[] | .[] | .info | .season | tonumber' ${out_file} | sort | uniq)
+  exit
+elif test "$argc" = "3"; then
+  season="$3"
+  echo season ${season} info 1>&2
+
+  ## select the right season and print its info
+  jq '. | ."seasons"[] | select(."season_number" == '"${season}"')' ${out_file}
+elif test "$argc" = "4"; then
+  test "$2" = "season"
+  test "$4" = "episode"
+  season="$3"
+  echo season ${season} episodes 1>&2
+  # TODO: title vs name (name has date?) more relevant for same named movies?
+  # get episodes for season
+  jq '. | .episodes["'"${season}"'"] ' "${out_file}" | \
+    jq '. | [.[] | {title: .title, episode_num: (.episode_num | tonumber), season: (.season | tonumber), id: (.id | tonumber)}]' | \
+    jq --raw-output '.[] | [(.episode_num), .title, .id] | @csv'
+elif test "$argc" = "5"; then
+  test "$2" = "season"
+  test "$4" = "episode"
+  season="$3"
+  episode="$5"
+  echo season ${season} episode ${episode} 1>&2
+  # do something about episode ( print its info)
+  jq '. | .episodes["'"${season}"'"] | .[] | select(.episode_num == "'"${episode}"'")' "${out_file}"
+
+fi
+
+# file has seasons array,
+# info object,
+# episodes array
+
+# seasons array has seasons for which no episodes
+
+## season object
+# episode count, id, name, season_number
+
+## info object
+# name, title, year, youtube_trailer
+
+## episodes array
+# is acrually array of season arrays indexed by str(season_num)
+# episodes["1"] is season one array of episode objects
+
+## episode object
+# id, episode_num, title, container_extension, infoobject["season"]
+
+
+# ffmpeg add title tag
+# and subtitle maybe
+# print mkv metadata tags
+# ffprobe -v quiet -show_entries format ./vid.mkv
+
