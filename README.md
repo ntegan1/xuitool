@@ -2,7 +2,7 @@
 
 Tool for downloading/playing available content, fetching more information on the content, searching/sorting through content, and subtitle searching
 
-Usage information / examples posted in pull request body for each feature when developed and merged.
+Usage information / examples posted in pull request body for each feature when developed and merged, [e.g.](https://github.com/ntegan1/xuitool/pull/2).
 
 ### Dependencies / Environment
 Meant for linux machines.
