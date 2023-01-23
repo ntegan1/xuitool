@@ -26,13 +26,4 @@ function download_all_info_if_needed() {
     download_categories_for_stream_type "${s}" "${u}" "${p}" "${f}" > "${out_file}"
   done
 }
-function tab_separated_formatted_info_for_stream_type() {
-  stream_type="$1"
-}
-
 download_all_info_if_needed
-exit
-
-# 'live', 'series', 'vod'
-stream_type="$1"
-tab_separated_formatted_info_for_stream_type "${stream_type}"
