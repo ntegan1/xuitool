@@ -37,7 +37,6 @@ function download_streams_for_stream_type() {
 
 }
 function download_series_info_for_stream_id() {
-  #untested
   providerurl="$1"
   username="$2"
   password="$3"
