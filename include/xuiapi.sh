@@ -75,6 +75,13 @@ function player_api_request() {
   url+="${extraparams}"
   curl "${url}"
 }
+function get_live_stream_link_for_id() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  stream_id="$4"
+  echo "${providerurl}/live/${username}/${password}/${stream_id}"
+}
 function get_credentials_providerurl() { cat "${credentials_dir}/providerurl"; }
 function get_credentials_username() { cat "${credentials_dir}/username"; }
 function get_credentials_password() { cat "${credentials_dir}/password"; }
