@@ -38,6 +38,14 @@ stream_id="$(echo "${episode_info}" | jq -r '.id')"
 filename="${stream_id}.${extension}"
 video_file="${media_directory}/${filename}"
 test -f "${video_file}"
+#subdl --search "${title}" \
+#  --existing=bypass \
+#  --download=most-downloaded "${video_file}"
+
+#subdl -i --search "${title}" "${video_file}"
+
 subdl --search "${title}" \
-  --existing=bypass \
-  --download=most-downloaded "${video_file}"
+  --existing=abort \
+  --download=most-downloaded "${video_file}" || \
+  subdl -i --search "${title}" "${video_file}"
+
