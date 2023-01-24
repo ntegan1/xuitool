@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -euo pipefail
+
+argc="$#"
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+media_directory="${whereami}/../var/media"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+function do_auth_once() {
+  test ! "${authenticated}" = "false" && return
+  authenticate_request "${s}" "${u}" "${p}"
+  authenticated="true"
+}
+
+test "${argc}" = "5"
+series_id="$1"
+test "$2" = "season"
+test "$4" = "episode"
+out_file="${cache_info_directory}/series_info/${series_id}.json"
+test -f "${out_file}"
+season="$3"
+episode="$5"
+# TODO: maybe pipe seriesinfo output to this
+# the info
+episode_info="$(jq '. | .episodes["'"${season}"'"] | .[] | select(.episode_num == "'"${episode}"'")' "${out_file}")"
+#echo "${season_info}"
+title="$(echo "${episode_info}" | jq -r '.title')"
+extension="$(echo "${episode_info}" | jq -r '.container_extension')"
+stream_id="$(echo "${episode_info}" | jq -r '.id')"
+filename="${stream_id}.${extension}"
+video_file="${media_directory}/${filename}"
+test -f "${video_file}"
+#subdl --search "${title}" \
+#  --existing=bypass \
+#  --download=most-downloaded "${video_file}"
+
+#subdl -i --search "${title}" "${video_file}"
+
+subdl --search "${title}" \
+  --existing=abort \
+  --download=most-downloaded "${video_file}" || \
+  subdl -i --search "${title}" "${video_file}"
+
