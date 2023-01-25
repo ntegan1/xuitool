@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -euo pipefail
+
+argc="$#"
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+function do_auth_once() {
+  test ! "${authenticated}" = "false" && return
+  authenticate_request "${s}" "${u}" "${p}"
+  authenticated="true"
+}
+
+stream_id="$1"
+out_file="${cache_info_directory}/vod_info/${stream_id}.json"
+#test -f "${out_file}" && exit 0
+#do_auth_once
+echo ${out_file}
+test ! -f "${out_file}" && download_vod_info_for_stream_id "${s}" "${u}" "${p}" "${stream_id}" > "${out_file}"
+true

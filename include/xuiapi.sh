@@ -81,7 +81,7 @@ function get_vod_stream_link_for_id() {
   password="$3"
   stream_id="$4"
   container_extension="$5"
-  echo "${providerurl}/live/${username}/${password}/${stream_id}.${container_extension}"
+  echo "${providerurl}/movie/${username}/${password}/${stream_id}.${container_extension}"
 }
 function get_live_stream_link_for_id() {
   providerurl="$1"
