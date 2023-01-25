@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -euo pipefail
+
+argc="$#"
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+argc="$#"
+search_term="$*"
+
+#grep -i
+
+out_file="${cache_info_directory}/vod_streams.json"
+
+# list all series id and name
+jq '.[] | {name: .name, stream_id: .stream_id}' "${out_file}" | \
+  jq -r ' [.name, .stream_id] | @csv' | sort | \
+  grep -i "${search_term}"
+exit
+
+#test -f "${out_file}" && exit 0
+#do_auth_once

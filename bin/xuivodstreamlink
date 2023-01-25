@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -euo pipefail
+
+argc="$#"
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+test "${argc}" = "2"
+stream_id="$1"
+container_extension="$2"
+get_vod_stream_link_for_id "${s}" "${u}" "${p}" "${stream_id}" "${container_extension}"
