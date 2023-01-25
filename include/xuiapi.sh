@@ -75,6 +75,14 @@ function player_api_request() {
   url+="${extraparams}"
   curl "${url}"
 }
+function get_vod_stream_link_for_id() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  stream_id="$4"
+  container_extension="$5"
+  echo "${providerurl}/live/${username}/${password}/${stream_id}.${container_extension}"
+}
 function get_live_stream_link_for_id() {
   providerurl="$1"
   username="$2"

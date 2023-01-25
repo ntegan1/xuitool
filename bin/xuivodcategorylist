@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -euo pipefail
+
+argc="$#"
+whereami="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+include_dir="${whereami}/../include"
+credentials_dir="${whereami}/../etc/credentials"
+cache_info_directory="${whereami}/../var/cache"
+authenticated="false"
+source "${include_dir}/xuiapi.sh"
+s="$(get_credentials_providerurl)"
+u="$(get_credentials_username)"
+p="$(get_credentials_password)"
+
+category_id="$1"
+
+out_file="${cache_info_directory}/vod_streams.json"
+
+# list all series id and name
+#jq '.[] | {name: .name, stream_id: .stream_id}' "${out_file}" | \
+#  jq -r ' [.name, .stream_id] | @csv' | sort | \
+#  grep -i "${search_term}"
+
+#jq '.[] | {name: .name, stream_id: .stream_id}' "${out_file}"
+#jq '.[] | select(.category_id == "'"${category_id}"'")' "${out_file}"
+
+
+# match category id even if in multiple cat id array
+#jq '.[] | select((.category_ids[] | contains('"${category_id}"')) or (.category_id == "'"${category_id}"'"))' "${out_file}"
+
+jq '.[] | select((.category_ids[] | contains('"${category_id}"')) or (.category_id == "'"${category_id}"'"))' "${out_file}" | \
+  jq -r ' [.name, .stream_id,.container_extension] | @csv' | sort
+
+
