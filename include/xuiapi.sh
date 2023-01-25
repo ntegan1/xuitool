@@ -61,6 +61,29 @@ function download_categories_for_stream_type() {
   extraparams="&action=get_${stream_type}_categories"
   player_api_request "${providerurl}" "${username}" "${password}" "${extraparams}"
 }
+function download_epg_for_live_stream() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  stream_id="$4"
+  extraparams="&action=get_short_epg&stream_id=${stream_id}"
+  #extraparams="&action=get_short_epg&stream_id=${stream_id}&limit=10"
+  player_api_request "${providerurl}" "${username}" "${password}" "${extraparams}"
+}
+function download_all_epg_for_live_stream() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  stream_id="$4"
+  extraparams="&action=get_simple_data_table&stream_id=${stream_id}"
+  player_api_request "${providerurl}" "${username}" "${password}" "${extraparams}"
+}
+function download_all_epg_for_all_live_streams() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  xml_tv_request "${providerurl}" "${username}" "${password}"
+}
 function player_api_request() {
   numparams="$#"
   providerurl="$1"
@@ -73,6 +96,16 @@ function player_api_request() {
   url+="?username=${username}"
   url+="&password=${password}"
   url+="${extraparams}"
+  curl "${url}"
+}
+function xml_tv_request() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  url="${providerurl}"
+  url+="/xmltv.php"
+  url+="?username=${username}"
+  url+="&password=${password}"
   curl "${url}"
 }
 function get_vod_stream_link_for_id() {
