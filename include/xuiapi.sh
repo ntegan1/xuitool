@@ -98,6 +98,17 @@ function player_api_request() {
   url+="${extraparams}"
   curl "${url}"
 }
+function panel_api_request() {
+  numparams="$#"
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  url="${providerurl}"
+  url+="/panel_api.php"
+  url+="?username=${username}"
+  url+="&password=${password}"
+  curl "${url}"
+}
 function xml_tv_request() {
   providerurl="$1"
   username="$2"
@@ -123,6 +134,19 @@ function get_live_stream_link_for_id() {
   stream_id="$4"
   echo "${providerurl}/live/${username}/${password}/${stream_id}"
 }
+function get_timeshift_stream_link_for_id() {
+  providerurl="$1"
+  username="$2"
+  password="$3"
+  stream_id="$4"
+  # timeshift
+  # http://host:port/streaming/timeshift.php?username=User&password=Pass&stream=StreamID&start=year-month-day:hour-minutes&duration=in_minutes
+  #http://host:port/streaming/timeshift.php?username=User&password=Pass&stream=1234&start=2020-12-06:08-00&duration=120
+
+  #2023-01-25 07:59:15
+  echo "${providerurl}/streaming/timeshift.php?username=${username}&password=${password}&stream=226642&start=2023-01-25:07-59&start=&duration=120"
+}
 function get_credentials_providerurl() { cat "${credentials_dir}/providerurl"; }
 function get_credentials_username() { cat "${credentials_dir}/username"; }
 function get_credentials_password() { cat "${credentials_dir}/password"; }
+
