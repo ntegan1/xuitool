@@ -21,3 +21,6 @@ function do_auth_once() {
 
 stream_id="$1"
 download_epg_for_live_stream "${s}" "${u}" "${p}" "${stream_id}"
+
+#jq '.[][] | .title |= @base64d' a.json
+
