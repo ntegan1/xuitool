@@ -13,13 +13,35 @@ s="$(get_credentials_providerurl)"
 u="$(get_credentials_username)"
 p="$(get_credentials_password)"
 
+function timestamp_utc_to_local_string() {
+  stamp="$1"
+  #date -d 'TZ="UTC" @1675056600'
+  #date "+%Y-%m-%d %H:%M %Z" -d 'TZ="UTC" @1675056600'
+  date "+%Y-%m-%d %H:%M %Z" -d 'TZ="UTC" @'"${stamp}"
+}
 function do_auth_once() {
   test ! "${authenticated}" = "false" && return
   authenticate_request "${s}" "${u}" "${p}"
   authenticated="true"
 }
+function liveepgline() {
+  line="$1"
+  start="$(echo "$line" | jq '.start_timestamp | tonumber')"
+  stop="$(echo "$line" | jq '.stop_timestamp | tonumber')"
+  #echo $line line
+  startstr="$(timestamp_utc_to_local_string "$start")"
+  stopstr="$(timestamp_utc_to_local_string "$stop")"
+  echo $line | jq '.start = "'"${startstr}"'"'| \
+    jq '.stop = "'"${stopstr}"'"' | \
+    jq '{title: .title, description: .description, start: .start, stop: .stop, channel_id: .channel_id}'
+}
 
 stream_id="$1"
+
+#download_epg_for_live_stream "${s}" "${u}" "${p}" "${stream_id}" | \
+# jq '[.[][] | .title |= @base64d| .description |= @base64d]'
+
 download_epg_for_live_stream "${s}" "${u}" "${p}" "${stream_id}" | \
- jq '[.[][] | .title |= @base64d| .description |= @base64d]'
+ jq -cr '.[][] | .title |= @base64d| .description |= @base64d' | \
+ while read -r line; do liveepgline "$line"; done
 
