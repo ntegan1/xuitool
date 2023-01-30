@@ -132,7 +132,7 @@ function get_live_stream_link_for_id() {
   username="$2"
   password="$3"
   stream_id="$4"
-  echo "${providerurl}/live/${username}/${password}/${stream_id}"
+  echo "${providerurl}/live/${username}/${password}/${stream_id}.ts"
 }
 function get_timeshift_stream_link_for_id() {
   providerurl="$1"
